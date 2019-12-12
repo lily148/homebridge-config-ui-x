@@ -5,7 +5,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build --prod --output-path=../public --source-map=false --extract-css --aot=true",
+    "build": "ng build --prod --output-path=../public --source-map=false --extract-css --aot=false",
     "lint": "tslint -p tsconfig.json -c tslint.json"
   },
   "private": true,
