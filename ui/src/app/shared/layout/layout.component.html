@@ -19,46 +19,46 @@
         <li class="nav-item waves-effect waves-light" routerLinkActive="active" *ngIf="$auth.user.admin">
           <a class="nav-link" routerLink="/plugins" [translate]="'menu.label_plugins'">Plugins</a>
         </li>
-        <li class="nav-item waves-effect waves-light" routerLinkActive="active" *ngIf="$auth.user.admin">
+        <!--<li class="nav-item waves-effect waves-light" routerLinkActive="active" *ngIf="$auth.user.admin">
           <a class="nav-link" routerLink="/config" [translate]="'menu.label_config'">Config</a>
-        </li>
+        </li>-->
         <li class="nav-item waves-effect waves-light" routerLinkActive="active" *ngIf="$auth.env.enableAccessories">
           <a class="nav-link" routerLink="/accessories" [translate]="'menu.label_accessories'">Accessories</a>
         </li>
       </ul>
 
       <ul class="navbar-nav nav-flex-icons">
-        <li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
+        <!--<li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
           ngbTooltip="{{'menu.tooltip_view_logs' | translate}}" container="body">
           <a class="nav-link" routerLink="/logs">
             <i class="material-icons">chrome_reader_mode</i>
           </a>
-        </li>
-        <li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
+        </li>-->
+        <!--<li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
           ngbTooltip="{{'menu.tooltip_user_accounts' | translate}}" container="body" *ngIf="$auth.user.admin">
           <a class="nav-link" routerLink="/users">
             <i class="material-icons">supervisor_account</i>
           </a>
-        </li>
+        </li>-->
         <li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
           ngbTooltip="{{'menu.tooltip_restart' | translate}}" container="body">
           <a class="nav-link" routerLink="/restart">
             <i class="material-icons">power_settings_new</i>
           </a>
         </li>
-        <li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
+        <!--<li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
           ngbTooltip="{{'menu.tooltip_logout' | translate}}" container="body" *ngIf="$auth.formAuth">
           <a class="nav-link" (click)="$auth.logout()">
             <i class="material-icons">exit_to_app</i>
           </a>
-        </li>
+        </li>-->
 
         <li class="nav-item dropdown" *ngIf="$auth.env.runningInDocker && $auth.user.admin">
           <a class="nav-link dropdown-toggle waves-effect waves-light" data-toggle="dropdown" aria-haspopup="true"
             aria-expanded="false">
             <i class="fab fa-docker"></i>
           </a>
-          <div class="dropdown-menu dropdown-menu-right dropdown-info">
+          <!--<div class="dropdown-menu dropdown-menu-right dropdown-info">
             <a class="dropdown-item waves-effect waves-light" routerLink="/platform-tools/terminal"
               [translate]="'menu.docker.label_terminal'">Terminal</a>
             <a class="dropdown-item waves-effect waves-light" routerLink="/platform-tools/docker/startup-script"
@@ -67,7 +67,7 @@
               [translate]="'menu.docker.label_restart_container'">Restart Container</a>
             <a class="dropdown-item waves-effect waves-light" routerLink="/platform-tools/docker/settings"
               [translate]="'menu.docker.label_settings'">Settings</a>
-          </div>
+          </div>-->
         </li>
 
         <li class="nav-item dropdown" *ngIf="$auth.env.runningInLinux && $auth.user.admin">
@@ -75,14 +75,14 @@
             aria-expanded="false">
             <i class="material-icons">more_vert</i>
           </a>
-          <div class="dropdown-menu dropdown-menu-right dropdown-info">
+          <!--<div class="dropdown-menu dropdown-menu-right dropdown-info">
             <a class="dropdown-item waves-effect waves-light" *ngIf="$auth.env.enableTerminalAccess"
               routerLink="/platform-tools/terminal" [translate]="'menu.linux.label_terminal'">Terminal</a>
             <a class="dropdown-item waves-effect waves-light" routerLink="/platform-tools/linux/restart-server"
               [translate]="'menu.linux.label_restart_server'">Restart Server</a>
             <a class="dropdown-item waves-effect waves-light" routerLink="/platform-tools/linux/shutdown-server"
               [translate]="'menu.linux.label_shutdown_server'">Shutdown Server</a>
-          </div>
+          </div>-->
         </li>
 
       </ul>
