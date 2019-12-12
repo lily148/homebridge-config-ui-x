@@ -15,14 +15,14 @@
       "port": {
         "title": "Port",
         "type": "integer",
-        "default": 8080,
+        "default": 9090,
         "maximum": 65535,
         "required": true
       },
       "auth": {
         "title": "Auth Mode",
         "type": "string",
-        "default": "form",
+        "default": "none",
         "oneOf": [
           {
             "title": "Form",
@@ -339,132 +339,16 @@
           "type": "flex",
           "flex-flow": "column",
           "items": [
-            "name",
-            "theme"
+            "name"
           ]
         },
         {
           "type": "flex",
           "flex-flow": "column",
           "items": [
-            "port",
-            "auth"
+            "theme"
           ]
         }
-      ]
-    },
-    {
-      "type": "fieldset",
-      "expandable": true,
-      "title": "Log Viewer Setup",
-      "items": [
-        "log.method",
-        {
-          "key": "log.path",
-          "description": "Enter the full file path to your log file.",
-          "required": true,
-          "condition": {
-            "functionBody": "return (model.log && model.log.method==='file')"
-          }
-        },
-        {
-          "key": "log.service",
-          "description": "Enter the systemd service name. Defaults to 'homebridge'.",
-          "placeholder": "homebridge",
-          "required": true,
-          "condition": {
-            "functionBody": "return (model.log && model.log.method==='systemd')"
-          }
-        },
-        {
-          "key": "log.command",
-          "description": "This command should stream the logs to stdout.",
-          "required": true,
-          "condition": {
-            "functionBody": "return (model.log && model.log.method==='custom')"
-          }
-        }
-      ]
-    },
-    {
-      "type": "fieldset",
-      "title": "Accessory Control Settings",
-      "expandable": true,
-      "expanded": false,
-      "items": [
-        "accessoryControl.debug",
-        {
-          "type": "help",
-          "helpvalue": "<h6>Instance Blacklist</h6><em class='primary-text'>Enter the usernames of any other Homebridge instances on your network that you do not want to be able to control from this instance.</em>"
-        },
-        {
-          "nodescription": true,
-          "notitle": true,
-          "key": "accessoryControl.instanceBlacklist",
-          "type": "array",
-          "items": [
-            {
-              "type": "div",
-              "displayFlex": true,
-              "flex-direction": "row",
-              "items": [
-                {
-                  "key": "accessoryControl.instanceBlacklist[]",
-                  "flex": "1 1 50px",
-                  "notitle": true,
-                  "placeholder": "Enter homebridge username..."
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "fieldset",
-      "expandable": true,
-      "title": "Advanced",
-      "items": [
-        "sudo",
-        "websocketCompatibilityMode",
-        "debug",
-        {
-          "key": "restart",
-          "description": "If no restart command is set the process will terminate with a non-zero exit code."
-        },
-        {
-          "key": "proxyHost",
-          "placeholder": "eg. example.com:8443",
-          "description": "When running behind a reverse proxy you may need to enter the hostname you use to access the UI."
-        },
-        {
-          "key": "loginWallpaper",
-          "description": "Leave blank to use default wallpaper."
-        },
-        {
-          "key": "temp",
-          "placeholder": "eg. /sys/class/thermal/thermal_zone0/temp"
-        },
-        "tempUnits",
-        {
-          "key": "homebridgePackagePath",
-          "description": "Leave blank unless you have not installed Homebridge as a global module."
-        }
-      ]
-    },
-    {
-      "type": "fieldset",
-      "expandable": true,
-      "title": "SSL Setup",
-      "items": [
-        {
-          "type": "help",
-          "helpvalue": "<em class='primary-text'>Leave these fields blank to disable SSL.</em><br><em class='text-danger'>After enabling SSL you will only be able to access the Config UI using https://</div>"
-        },
-        "ssl.key",
-        "ssl.cert",
-        "ssl.pfx",
-        "ssl.passphrase"
       ]
     }
   ]
