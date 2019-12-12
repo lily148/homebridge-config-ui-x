@@ -1,10 +1,10 @@
 {
-  "name": "homebridge-config-ui-x",
-  "displayName": "Homebridge Config UI X",
+  "name": "homebridge-smartgateway-mobile-setting",
+  "displayName": "Smart Gateway Mobile Setting",
   "version": "4.6.5",
   "description": "A web based management, configuration and control platform for Homebridge",
   "license": "MIT",
-  "author": "oznu <dev@oz.nu>",
+  "author": "IBY",
   "repository": {
     "type": "git",
     "url": "git://github.com/oznu/homebridge-config-ui-x.git"
