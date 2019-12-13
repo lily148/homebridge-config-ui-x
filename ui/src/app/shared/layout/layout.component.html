@@ -4,7 +4,7 @@
   <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary scrolling-navbar">
     <a class="navbar-brand" routerLink="/">
       <img class="menu-logo" src="/assets/homebridge-logo.svg" />
-      <strong>Mobile Native Plugin</strong>
+      <strong>Native Mobile Plugin</strong>
     </a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
       aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -19,14 +19,11 @@
         <li class="nav-item waves-effect waves-light" routerLinkActive="active" *ngIf="$auth.user.admin">
           <a class="nav-link" routerLink="/plugins" [translate]="'menu.label_plugins'">Plugins</a>
         </li>
-        <li class="nav-item waves-effect waves-light" routerLinkActive="active" *ngIf="$auth.env.enableAccessories">
-          <a class="nav-link" routerLink="/accessories" [translate]="'menu.label_accessories'">Accessories</a>
-        </li>
       </ul>
 
       <ul class="navbar-nav nav-flex-icons">
         <li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
-          ngbTooltip="{{'menu.tooltip_restart' | translate}}" container="body">
+          ngbTooltip="Refresh Plugin Service" container="body">
           <a class="nav-link" routerLink="/restart">
             <i class="material-icons">power_settings_new</i>
           </a>
