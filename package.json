@@ -1,5 +1,5 @@
 {
-  "name": "homebridge-smartgateway-mobile-setting",
+  "name": "homebridge-config-ui-x",
   "displayName": "Smart Gateway Mobile Setting",
   "version": "4.6.5",
   "description": "A web based management, configuration and control platform for Homebridge",
