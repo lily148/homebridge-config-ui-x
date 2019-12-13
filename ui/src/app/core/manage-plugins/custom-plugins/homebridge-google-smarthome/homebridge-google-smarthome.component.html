@@ -30,6 +30,7 @@
     <div class="text-center" *ngIf="!pluginConfig.token">
       <button class="btn btn-primary btn-lg" (click)="linkAccount()"
         translate="plugins.settings.custom.homebridge-gsh.label_link_account"></button>
+      <span>If the link is not working, please click <a href="http://smartgateway.local:9090">here</a></span>
     </div>
 
     <div class="text-center mt-1" *ngIf="pluginConfig.token">
