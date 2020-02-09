@@ -23,23 +23,16 @@
 
       <ul class="navbar-nav nav-flex-icons hb-nav-right">
         <li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
-          ngbTooltip="Refresh Plugin Service" container="body">
-          <a class="nav-link" routerLink="/restart">
-            <i class="material-icons">power_settings_new</i>
-          </a>
+                  ngbTooltip="Refresh Plugin Service" container="body">
+                  <a class="nav-link" routerLink="/restart">
+                    <i class="fas fa-power-off nav-menu-icon"></i>
+                  </a>
         </li>
 
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle waves-effect waves-light" data-toggle="dropdown" aria-haspopup="true"
             aria-expanded="false">
             <i class="fas fa-ellipsis-v nav-menu-icon"></i>
-          </a>
-        </li>
-
-        <li class="nav-item dropdown" *ngIf="$auth.env.runningInLinux && $auth.user.admin">
-          <a class="nav-link dropdown-toggle waves-effect waves-light" data-toggle="dropdown" aria-haspopup="true"
-            aria-expanded="false">
-            <i class="material-icons">more_vert</i>
           </a>
         </li>
 
