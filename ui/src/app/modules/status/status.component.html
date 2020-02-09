@@ -1,113 +1,50 @@
-<div class="status-container d-flex flex-column">
-  <div class="row">
-    <div class="col-md-4 mb-3">
-      <h3 class="primary-text">Native Mobile Plugins</h3>
-      <!--Panel-->
-      <div class="card card-body text-center">
-        <div #qrcode class="qr-code-container mb-2"></div>
-        <p class="mb-1">{{ server.pin }}</p>
-        <p class="grey-text mb-1" [translate]="'status.message_code_scan_instructions'">
-          Scan this code with the camera on your iOS device to add to Apple Home.
-        </p>
-      </div>
-      <!--/.Panel-->
+<div class="status-container d-flex flex-column mt-0">
 
-    </div>
 
-    <div class="col-md-8">
-      <h3 class="primary-text">Plugin Status</h3>
+  <button *ngIf="consoleStatus === 'up' && $auth.user.admin" (click)="addWidget()"
+    class="btn btn-primary btn-floating add-widget-button"
+    ngbTooltip="{{ (options.draggable.enabled ? 'status.widget.label_add_widget' : 'status.widget.label_layout_locked') | translate }}">
+    <i class="fas fa-plus" [ngClass]="{
+      'fa-plus': options.draggable.enabled,
+      'fa-lock': !options.draggable.enabled
+    }"></i>
+  </button>
 
-      <!--Panel-->
-      <div class="card card-body mb-3">
-        <div class="d-flex flex-row">
-          <h5 class="mb-0 mr-auto">Native Plugin</h5>
-          <p *ngIf="homebridge.fork" class="mb-0 d-none d-sm-inline grey-text"
-            [innerText]="homebridge.fork | lowercase">
-          </p>
-        </div>
-        <div class="d-flex flex-row">
-          <div class="d-flex p-1">
-            <div class="p-3">
-              <i class="material-icons status-circle bg-status-green">&#xE5CA;</i>
-            </div>
-            <div class="align-self-center">
-              <span>
-                Current Version
-              </span>
-              <br>
-              <span class="grey-text"><span class="d-none d-sm-inline">Ver.</span>
-                {{ homebridge.installedVersion }}</span>
-            </div>
+
+  <app-spinner *ngIf="consoleStatus === 'down'"></app-spinner>
+
+  <div class="row flex-column flex-grow-1">
+    <!-- <div>
+      <button (click)="addWidget()" class="btn btn-primary">Hi</button>
+    </div> -->
+    <gridster [options]="options" class="flex-grow-1 no-scrollbars" [hidden]="consoleStatus === 'down'"
+      *ngIf="dashboard.length">
+      <ng-container *ngFor="let item of dashboard">
+        <gridster-item *ngIf="!(item.hideOnMobile && page.mobile)" class="widget-item" [item]="item"
+          [id]="item.component">
+          <div class="gridster-item-content">
+            <i class="fas fa-cog widget-control-button primary-text" (click)="manageWidget(item)"></i>
           </div>
-        </div>
-      </div>
-      <!--/.Panel-->
-
-      <!--Panel-->
-      <div class="card card-body mb-3">
-        <h5 class="mb-0" [translate]="'status.services.title_services'">Services</h5>
-        <div class="d-flex flex-row">
-          <div class="d-flex p-1">
-            <div class="p-3">
-              <i *ngIf="this.server.status==='up'" class="material-icons status-circle bg-status-green">&#xE5CA;</i>
-              <i *ngIf="this.server.status!=='up'" class="material-icons status-circle bg-red">&#xE14B;</i>
-            </div>
-            <div class="align-self-center">
-              <span>Native Plugin</span>
-              <br>
-              <span class="grey-text d-none d-sm-block" *ngIf="this.server.status==='up'">Running</span>
-              <span class="grey-text d-none d-sm-block" *ngIf="this.server.status!=='up'">Not running</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!--/.Panel-->
-
-      <!--Panel-->
-      <div class="card card-body mb-3" *ngIf="consoleStatus==='up' && stats.uptime">
-        <h5 class="mb-0" [translate]="'status.uptime.title_uptime'">Uptime</h5>
-        <div class="d-flex flex-row">
-          <div class="p-1" [ngClass]="{'d-flex': stats.uptime.days, 'd-none d-sm-flex': !stats.uptime.days}">
-            <div class="p-3">
-              <i class="material-icons status-circle bg-blue">&#xE88B;</i>
-            </div>
-            <div class="align-self-center">
-              <span [innerText]="stats.uptime.days"></span>
-              <br>
-              <span class="grey-text" [translate]="'status.uptime.label_days'">Days</span>
-            </div>
-          </div>
-          <div class="d-flex p-1">
-            <div class="p-3">
-              <i class="material-icons status-circle bg-blue">&#xE88B;</i>
-            </div>
-            <div class="align-self-center">
-              <span [innerText]="stats.uptime.hours"></span>
-              <br>
-              <span class="grey-text" [translate]="'status.uptime.label_hours'">Hours</span>
-            </div>
-          </div>
-          <div class="p-1" [ngClass]="{'d-flex': !stats.uptime.days, 'd-none d-sm-flex': stats.uptime.days}">
-            <div class="p-3">
-              <i class="material-icons status-circle bg-blue">&#xE88B;</i>
-            </div>
-            <div class="align-self-center">
-              <span [innerText]="stats.uptime.minutes"></span>
-              <br>
-              <span class="grey-text" [translate]="'status.uptime.label_minutes'">Minutes</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <!--/.Panel-->
-
-    </div>
+          <app-widgets [widget]="item" class="d-flex h-100 w-100"></app-widgets>
+        </gridster-item>
+      </ng-container>
+    </gridster>
   </div>
 
   <div class="row mb-auto">
     <div class="col-md-12 text-center mb-3 grey-text">
       <small>
-        <!-- This plugin is copy and customize from @oznu. -->
+        <a class="grey-text" target="_blank" rel="noopener noreferrer"
+          href="https://github.com/oznu/homebridge-config-ui-x">{{ $auth.env.packageName }}
+          v{{ $auth.env.packageVersion }}</a>
+        -
+      </small>
+      <small>
+        <!-- The below copyright notice shall be included and displayed on all copies or substantial portions of this software. -->
+        <a class="grey-text" target="_blank" rel="noopener noreferrer" href="https://github.com/oznu">
+          &copy; 2020 oznu
+        </a>
+        <!-- The above copyright notice shall be included and displayed on all copies or substantial portions of this software. -->
       </small>
     </div>
   </div>
