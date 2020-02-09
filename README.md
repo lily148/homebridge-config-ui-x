@@ -6,13 +6,27 @@ Supported Languages: :gb: :de: :fr: :poland: :czech_republic: :ru: :cn: :hungary
 
 # Homebridge Config UI X
 
-This is a plugin for [Homebridge](https://github.com/nfarina/homebridge). This is a fork of the work originally done by [mkellsy](https://github.com/mkellsy/homebridge-config-ui).
+[Homebridge Config UI X](https://www.npmjs.com/package/homebridge-config-ui-x) is a web based management tool for [Homebridge](https://github.com/nfarina/homebridge) that allows you to manage all aspects of your Homebridge setup.
 
-This plugin allows you to monitor, backup and configure your Homebridge server from a browser.
+* Install and configure Homebridge plugins
+* Edit the Homebridge `config.json` with advanced JSON syntax checking and structure validation
+* Monitor your Homebridge server via a fully customisable widget-based dashboard
+* View the Homebridge logs
+* View and control Homebridge accessories
+* Restart Homebridge
+* and more... 
 
-[![Status](screenshots/homebridge-config-ui-x-accessories.png)](#accessory-control)
+Homebridge Config UI X also provides a tool called [`hb-service`](https://github.com/oznu/homebridge-config-ui-x/wiki/Homebridge-Service-Command) which makes it easy to setup Homebridge as a service on Linux/Raspbian, macOS and Windows 10.
+
+[![Status](screenshots/homebridge-config-ui-x-darkmode-status.png?2020-01-07)](#usage)
 
 # Installation Instructions
+
+For detailed instructions on how to setup Homebridge with Homebridge Config UI X as a service see the guides on the wiki:
+
+* [Setup Homebridge as service on Linux / Raspbian](https://github.com/oznu/homebridge-config-ui-x/wiki/Homebridge-&-Systemd-(Raspbian,-Ubuntu,-Debian))
+* [Setup Homebridge as service on Windows 10](https://github.com/oznu/homebridge-config-ui-x/wiki/Homebridge-on-Windows-10)
+* [Setup Homebridge as service on macOS](https://github.com/oznu/homebridge-config-ui-x/wiki/Homebridge-UI-on-macOS)
 
 ```
 sudo npm install -g --unsafe-perm homebridge-config-ui-x
@@ -44,7 +58,6 @@ Add this to your homebridge `config.json` file
 * `log` - [See below for details](#log-viewer-configuration).
 * `sudo` - [See below for details](#sudo-mode).
 * `restart` - The command to run when a restart request is sent from the browser. If not populated it will just terminate the Homebridge process and let your process manager (like systemd) restart it.
-* `temp` - The path to the file that can display your current CPU temperature in WEB UI. eg. `/sys/class/thermal/thermal_zone0/temp`
 * `theme` - [See wiki for details](https://github.com/oznu/homebridge-config-ui-x/wiki/Themes)
 * `ssl` - [See below for details](#enabling-ssl)
 
@@ -194,32 +207,37 @@ Or if using a **PKCS#12** certificate you can setup SSL like this:
 
 ### Status Screen
 
-This shows an overview of your Homebridge system. It displays your pairing QR code, and informs you if there are any updates available for Homebridge or installed plugins.
+This shows an overview of your Homebridge system. The dashboard is widget based and completely customisable.
 
-![Status](screenshots/homebridge-config-ui-x-status.png?2019-08-10)
-
-### Log Screen
-
-This shows you the Homebridge rolling log. This is helpful for troubleshooting.
-
-![Log](screenshots/homebridge-config-ui-x-logs.png?2019-08-10)
+![Status](screenshots/homebridge-config-ui-x-status.png?2020-01-07)
 
 ### Plugin Screen
 
 This shows you the currently installed plugins and allows you to install, remove and upgrade plugins.
 
-![Log](screenshots/homebridge-config-ui-x-darkmode-plugins.png)
+![Plugin](screenshots/homebridge-config-ui-x-darkmode-plugins.png?2020-01-07)
 
-You can configure supported plugins using the graphical settings editor, removing the need to manually edit the `config.json`.
+You can configure supported plugins using the graphical settings editor, removing the need to manually edit the `config.json`. Over 40 popular plugins have implimented support for this feature.
 
-![Log](screenshots/homebridge-config-ui-x-darkmode-alexa-settings.png?2019-08-10)
-
+![Plugin Settings](screenshots/homebridge-config-ui-x-darkmode-alexa-settings.png?2020-01-07)
 
 ### Configuration Screen
 
 The configuration screen allows you to modify your Homebridge `config.json`. The built in editor automatically syntax-checks your JSON and makes a backup of your config every time you make a change.
 
-![Config](screenshots/homebridge-config-ui-x-config.png?2019-08-10)
+![Config](screenshots/homebridge-config-ui-x-config.png?2020-01-07)
+
+### Log Screen
+
+This shows you the Homebridge rolling log. This is helpful for troubleshooting.
+
+![Log](screenshots/homebridge-config-ui-x-logs.png?2020-01-07)
+
+### Accessories Screen
+
+This shows you the Homebridge accessories for all the Homebridge instances on your network. You can use this to control accessories from a web browser and works well on mobile devices which allows users to control Homebridge from non-Apple devices.
+
+![Accessories](screenshots/homebridge-config-ui-x-accessories.png?2020-01-07)
 
 # Supported Browsers
 

@@ -58,7 +58,7 @@ export class ConfigService {
     sudo?: boolean;
     restart?: string;
     log?: {
-      method: 'file' | 'custom' | 'systemd';
+      method: 'file' | 'custom' | 'systemd' | 'native';
       command?: string;
       path?: string;
       service?: string;
@@ -73,7 +73,6 @@ export class ConfigService {
       debug?: boolean;
       instanceBlacklist?: string[];
     }
-    temp?: string;
     tempUnits?: string;
     loginWallpaper?: string;
     noFork?: boolean;
@@ -85,7 +84,6 @@ export class ConfigService {
     debug?: boolean;
     proxyHost?: string;
     sessionTimeout?: number;
-    websocketCompatibilityMode?: boolean;
     homebridgePackagePath?: string;
   };
 
@@ -96,7 +94,15 @@ export class ConfigService {
   public instanceId: string;
 
   constructor() {
-    this.homebridgeConfig = fs.readJSONSync(this.configPath);
+    const homebridgeConfig = fs.readJSONSync(this.configPath);
+    this.parseConfig(homebridgeConfig);
+  }
+
+  /**
+   * Loads the config from the config.json
+   */
+  public parseConfig(homebridgeConfig) {
+    this.homebridgeConfig = homebridgeConfig;
     this.ui = Array.isArray(this.homebridgeConfig.platforms) ? this.homebridgeConfig.platforms.find(x => x.platform === 'config') : undefined;
 
     if (!this.ui) {
@@ -140,11 +146,12 @@ export class ConfigService {
         nodeVersion: process.version,
         packageName: this.package.name,
         packageVersion: this.package.version,
+        platform: os.platform(),
         runningInDocker: this.runningInDocker,
         runningInLinux: this.runningInLinux,
         dockerOfflineUpdate: this.dockerOfflineUpdate,
+        serviceMode: this.serviceMode,
         temperatureUnits: this.ui.tempUnits || 'c',
-        websocketCompatibilityMode: this.ui.websocketCompatibilityMode || false,
         instanceId: this.instanceId,
       },
       formAuth: Boolean(this.ui.auth !== 'none'),
@@ -158,7 +165,7 @@ export class ConfigService {
    */
   private setConfigForDocker() {
     // forced config
-    this.ui.restart = 'killall -9 homebridge && killall -9 homebridge-config-ui-x';
+    this.ui.restart = 'killall -15 homebridge; sleep 5.1; killall -9 homebridge; killall -9 homebridge-config-ui-x;';
     this.homebridgeInsecureMode = Boolean(process.env.HOMEBRIDGE_INSECURE === '1');
     this.ui.sudo = false;
     this.ui.log = {
@@ -170,9 +177,8 @@ export class ConfigService {
     if (!this.ui.port && process.env.HOMEBRIDGE_CONFIG_UI_PORT) {
       this.ui.port = parseInt(process.env.HOMEBRIDGE_CONFIG_UI_PORT, 10);
     }
-    this.ui.theme = this.ui.theme || process.env.HOMEBRIDGE_CONFIG_UI_THEME || 'teal';
+    this.ui.theme = this.ui.theme || process.env.HOMEBRIDGE_CONFIG_UI_THEME || 'auto';
     this.ui.auth = this.ui.auth || process.env.HOMEBRIDGE_CONFIG_UI_AUTH as 'form' | 'none' || 'form';
-    this.ui.temp = this.ui.temp || process.env.HOMEBRIDGE_CONFIG_UI_TEMP || undefined;
     this.ui.loginWallpaper = this.ui.loginWallpaper || process.env.HOMEBRIDGE_CONFIG_UI_LOGIN_WALLPAPER || undefined;
   }
 
@@ -180,10 +186,11 @@ export class ConfigService {
    * Populate the required config when running in "Service Mode"
    */
   private setConfigForServiceMode() {
-    this.ui.restart = undefined;
     this.homebridgeInsecureMode = true;
+    this.ui.restart = undefined;
+    this.ui.sudo = (os.platform() === 'linux');
     this.ui.log = {
-      method: 'file',
+      method: 'native',
       path: path.resolve(this.storagePath, 'homebridge.log'),
     };
   }

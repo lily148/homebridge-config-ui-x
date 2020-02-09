@@ -4,6 +4,7 @@ import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
 import * as uuid from 'uuid/v4';
 import { ApiService } from '../../api.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
   selector: 'app-settings-plugins-modal',
@@ -29,6 +30,7 @@ export class SettingsPluginsModalComponent implements OnInit {
   constructor(
     public activeModal: NgbActiveModal,
     private $api: ApiService,
+    private $auth: AuthService,
     private $toastr: ToastrService,
     private translate: TranslateService,
   ) { }
@@ -144,6 +146,11 @@ export class SettingsPluginsModalComponent implements OnInit {
             ) {
               platform.__uuid__ = uuid();
 
+              // Homebridge Hue - ensure users object is preserved
+              if (this.pluginName === 'homebridge-hue') {
+                this.homebridgeHueFix(platform);
+              }
+
               const platformConfig: any = {
                 config: platform,
                 onChange: this.blockChanged(platform.__uuid__, platform.platform),
@@ -200,12 +207,37 @@ export class SettingsPluginsModalComponent implements OnInit {
           this.translate.instant('plugins.settings.toast_plugin_config_saved'),
         );
         this.activeModal.close();
+
+        // reload app settings if the config was changed for Homebridge Config UI X
+        if (this.pluginName === 'homebridge-config-ui-x') {
+          this.$auth.getAppSettings();
+        }
       })
       .catch(err => {
         this.$toastr.error(this.translate.instant('config.toast_failed_to_save_config'), this.translate.instant('toast.title_error'));
       });
 
     this.saveInProgress = false;
+  }
+
+  /**
+   * Homebridge Hue - ensure users object is preserved
+   */
+  homebridgeHueFix(platform) {
+    this.configSchema.schema.properties.users = {
+      type: 'object',
+      properties: {},
+    };
+
+    if (!platform.users || typeof platform.users !== 'object') {
+      return;
+    }
+
+    for (const key of Object.keys(platform.users)) {
+      this.configSchema.schema.properties.users.properties[key] = {
+        type: 'string',
+      };
+    }
   }
 
 }

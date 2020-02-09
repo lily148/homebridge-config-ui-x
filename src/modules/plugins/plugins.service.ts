@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import * as os from 'os';
 import * as _ from 'lodash';
 import * as path from 'path';
+import * as https from 'https';
 import * as fs from 'fs-extra';
 import * as child_process from 'child_process';
 import * as semver from 'semver';
@@ -41,8 +42,12 @@ export class PluginsService {
   // installed plugin cache
   private installedPlugins: HomebridgePlugin[];
 
+  // npm package cache
+  private npmPackage: HomebridgePlugin;
+
   // setup requests with default options
   private rp = rp.defaults({
+    agent: new https.Agent({ keepAlive: true }),
     json: true,
     headers: {
       'User-Agent': this.configService.package.name,
@@ -179,7 +184,7 @@ export class PluginsService {
       // it's not installed; finish building the response
       plugin.publicPackage = true;
       plugin.latestVersion = pkg['dist-tags'].latest;
-      plugin.lastUpdated = pkg.package.date;
+      plugin.lastUpdated = pkg.time.modified;
       plugin.updateAvailable = false;
       plugin.links = {
         npm: `https://www.npmjs.com/package/${plugin.name}`,
@@ -221,7 +226,7 @@ export class PluginsService {
 
     installPath = path.resolve(installPath, '../');
 
-    await this.runNpmCommand([...this.npm, 'install', '--unsafe-perm', ...installOptions, `${pluginName}@latest`], installPath, client);
+    await this.runNpmCommand([...this.npm, 'install', ...installOptions, `${pluginName}@latest`], installPath, client);
 
     return true;
   }
@@ -252,7 +257,7 @@ export class PluginsService {
 
     installPath = path.resolve(installPath, '../');
 
-    await this.runNpmCommand([...this.npm, 'uninstall', '--unsafe-perm', ...installOptions, pluginName], installPath, client);
+    await this.runNpmCommand([...this.npm, 'uninstall', ...installOptions, pluginName], installPath, client);
     await this.ensureCustomPluginDirExists();
 
     return true;
@@ -267,6 +272,14 @@ export class PluginsService {
     if (pluginName === this.configService.name && this.configService.dockerOfflineUpdate) {
       await this.updateSelfOffline(client);
       return true;
+    }
+
+    // show a warning if updating homebridge-config-ui-x on Raspberry Pi 1 / Zero
+    if (pluginName === this.configService.name && os.cpus().length === 1 && os.arch() === 'arm') {
+      client.emit('stdout', color.yellow(`***************************************************************\r\n`));
+      client.emit('stdout', color.yellow(`Please be patient while ${this.configService.name} updates.\r\n`));
+      client.emit('stdout', color.yellow(`This process may take 5-15 minutes to complete on your device.\r\n`));
+      client.emit('stdout', color.yellow(`***************************************************************\r\n\r\n`));
     }
 
     await this.getInstalledPlugins();
@@ -289,7 +302,7 @@ export class PluginsService {
 
     installPath = path.resolve(installPath, '../');
 
-    await this.runNpmCommand([...this.npm, 'install', '--unsafe-perm', ...installOptions, `${pluginName}@latest`], installPath, client);
+    await this.runNpmCommand([...this.npm, 'install', ...installOptions, `${pluginName}@latest`], installPath, client);
 
     return true;
   }
@@ -350,9 +363,35 @@ export class PluginsService {
 
     installPath = path.resolve(installPath, '../');
 
-    await this.runNpmCommand([...this.npm, 'install', '--unsafe-perm', ...installOptions, `${homebridge.name}@latest`], installPath, client);
+    await this.runNpmCommand([...this.npm, 'install', ...installOptions, `${homebridge.name}@latest`], installPath, client);
 
     return true;
+  }
+
+  /**
+   * Gets the npm module details
+   */
+  public async getNpmPackage() {
+    if (this.npmPackage) {
+      return this.npmPackage;
+    } else {
+      const modules = await this.getInstalledModules();
+
+      const npmPkg = modules.find(x => x.name === 'npm');
+
+      if (!npmPkg) {
+        throw new Error('Could not find npm package');
+      }
+
+      const pjson = await fs.readJson(path.join(npmPkg.installPath, 'package.json'));
+      const npm = await this.parsePackageJson(pjson, npmPkg.path) as HomebridgePlugin & { showUpdateWarning?: boolean };
+
+      // show the update warning if the installed version is below the minimum recommended
+      npm.showUpdateWarning = semver.lt(npm.installedVersion, '6.4.1');
+
+      this.npmPackage = npm;
+      return npm;
+    }
   }
 
   /**
@@ -392,7 +431,21 @@ export class PluginsService {
     }
 
     const schemaPath = path.resolve(plugin.installPath, pluginName, 'config.schema.json');
-    const configSchema = await fs.readJson(schemaPath);
+    let configSchema = await fs.readJson(schemaPath);
+
+    // check to see if this plugin implements dynamic schemas
+    if (configSchema.dynamicSchemaVersion) {
+      const dynamicSchemaPath = path.resolve(this.configService.storagePath, `.${pluginName}-v${configSchema.dynamicSchemaVersion}.schema.json`);
+      this.logger.log(`[${pluginName}] dynamic schema path: ${dynamicSchemaPath}`);
+      if (fs.existsSync(dynamicSchemaPath)) {
+        try {
+          configSchema = await fs.readJson(dynamicSchemaPath);
+          this.logger.log(`[${pluginName}] dynamic schema loaded from: ${dynamicSchemaPath}`);
+        } catch (e) {
+          this.logger.error(`[${pluginName}] Failed to load dynamic schema at ${dynamicSchemaPath}: ${e.message}`);
+        }
+      }
+    }
 
     // modify this plugins schema to set the default port number
     if (pluginName === this.configService.name) {
@@ -494,7 +547,7 @@ export class PluginsService {
         .filter(fs.existsSync);
 
       if (windowsNpmPath.length) {
-        return [windowsNpmPath[0], '--no-update-notifier'];
+        return [windowsNpmPath[0], '-g'];
       } else {
         this.logger.error(`ERROR: Cannot find npm binary. You will not be able to manage plugins or update homebridge.`);
         this.logger.error(`ERROR: You might be able to fix this problem by running: npm install -g npm`);
@@ -502,7 +555,7 @@ export class PluginsService {
 
     }
     // Linux and macOS don't require the full path to npm
-    return ['npm', '--no-update-notifier'];
+    return ['npm'];
   }
 
   /**
@@ -608,10 +661,10 @@ export class PluginsService {
     } else {
       // do a pre-check to test for write access when not using sudo mode
       try {
-        await fs.access(cwd, fs.constants.W_OK);
+        await fs.access(path.resolve(cwd, 'node_modules'), fs.constants.W_OK);
       } catch (e) {
         client.emit('stdout', color.yellow(`The user "${os.userInfo().username}" does not have write access to the target directory:\n\r\n\r`));
-        client.emit('stdout', `${cwd}\n\r\n\r`);
+        client.emit('stdout', `${path.resolve(cwd, 'node_modules')}\n\r\n\r`);
         client.emit('stdout', color.yellow(`This may cause the operation to fail.\n\r`));
         client.emit('stdout', color.yellow(`See the docs for details on how to enable sudo mode:\n\r`));
         client.emit('stdout', color.yellow(`https://github.com/oznu/homebridge-config-ui-x#sudo-mode\n\r\n\r`));
@@ -629,13 +682,30 @@ export class PluginsService {
     client.emit('stdout', color.cyan(`DIR: ${cwd}\n\r`));
     client.emit('stdout', color.cyan(`CMD: ${command.join(' ')}\n\r\n\r`));
 
+    // setup the environment for the call
+    const env = {};
+    Object.assign(env, process.env);
+    Object.assign(env, {
+      npm_config_global_style: 'true',
+      npm_config_unsafe_perm: 'true',
+      npm_config_update_notifier: 'false',
+      npm_config_prefer_online: 'true',
+    });
+
+    // on windows we want to ensure the global prefix is the same as the install path
+    if (os.platform() === 'win32') {
+      Object.assign(env, {
+        npm_config_prefix: cwd,
+      });
+    }
+
     await new Promise((resolve, reject) => {
       const term = pty.spawn(command.shift(), command, {
         name: 'xterm-color',
         cols: 80,
         rows: 30,
         cwd,
-        env: process.env,
+        env,
       });
 
       // send stdout data from the process to all clients

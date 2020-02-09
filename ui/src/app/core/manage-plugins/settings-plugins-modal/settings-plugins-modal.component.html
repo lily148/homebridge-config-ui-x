@@ -17,11 +17,12 @@
         <ng-template ngbPanelContent>
           <json-schema-form *ngIf="configSchema.schema" [options]="jsonFormOptions" [schema]="configSchema.schema"
             [layout]="configSchema.layout" [form]="configSchema.form" [(ngModel)]="block.config" framework="bootstrap-4"
-            (onChanges)="block.onChange($event)">
+            (onChanges)="block.onChange($event)" class="ng-bs4-validate">
           </json-schema-form>
           <div class="d-flex">
-            <a class="ml-auto red-text" (click)="removeBlock(block.__uuid__)"
-              [ngbTooltip]="'Remove ' + configSchema.pluginType + '.'" container="body">
+            <a *ngIf="pluginName !== 'homebridge-config-ui-x'" class="ml-auto red-text"
+              (click)="removeBlock(block.__uuid__)" [ngbTooltip]="'Remove ' + configSchema.pluginType + '.'"
+              container="body">
               <i class="fas fa-trash"></i>
             </a>
           </div>

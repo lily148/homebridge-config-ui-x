@@ -13,10 +13,27 @@ interface UserInterface {
   instanceId?: string;
 }
 
+interface EnvInterface {
+  platform: 'darwin' | 'win32' | 'linux' | 'freebsd';
+  ableToConfigureSelf: boolean;
+  enableAccessories: boolean;
+  enableTerminalAccess: boolean;
+  homebridgeInstanceName: string;
+  nodeVersion: string;
+  packageName: string;
+  packageVersion: string;
+  runningInDocker: boolean;
+  runningInLinux: boolean;
+  dockerOfflineUpdate: boolean;
+  serviceMode: boolean;
+  temperatureUnits: string;
+  instanceId: string;
+}
+
 @Injectable()
 export class AuthService {
   public settingsLoaded = false;
-  public env: any = {};
+  public env: EnvInterface = {} as EnvInterface;
   public uiVersion: string;
   public formAuth = true;
   public theme: string;
@@ -146,12 +163,13 @@ export class AuthService {
         if (matchMedia('(prefers-color-scheme: dark)').matches) {
           theme = 'dark-mode';
         } else {
-          theme = 'teal';
+          theme = 'purple';
         }
       } catch (e) {
-        theme = 'teal';
+        theme = 'purple';
       }
-    } else if (this.theme) {
+    }
+    if (this.theme) {
       window.document.querySelector('body').classList.remove(`config-ui-x-${this.theme}`);
     }
     this.theme = theme;

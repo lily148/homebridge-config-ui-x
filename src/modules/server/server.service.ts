@@ -3,7 +3,7 @@ import * as path from 'path';
 import * as bufferShim from 'buffer-shims';
 import * as qr from 'qr-image';
 import * as child_process from 'child_process';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '../../core/config/config.service';
 import { Logger } from '../../core/logger/logger.service';
 import { ConfigEditorService } from '../config-editor/config-editor.service';
@@ -67,6 +67,19 @@ export class ServerService {
 
     this.logger.log(`Homebridge Reset: "persist" directory removed.`);
     this.logger.log(`Homebridge Reset: "accessories" directory removed.`);
+  }
+
+  /**
+   * Clears the Homebridge Accessory Cache
+   */
+  public async resetCachedAccessories() {
+    if (this.configService.serviceMode) {
+      this.logger.warn('Sent request to clear cached accesories to hb-service');
+      process.emit('message', 'clearCachedAccessories', undefined);
+    } else {
+      this.logger.error('The reset accessories cache command is only available in service mode');
+      throw new BadRequestException('This command is only available in service mode');
+    }
   }
 
   /**

@@ -157,6 +157,10 @@ export class HomebridgeGoogleSmarthomeComponent implements OnInit, OnDestroy {
     this.activeModal.close();
   }
 
+  close() {
+    this.activeModal.close();
+  }
+
   ngOnDestroy() {
     clearInterval(this.originCheckInterval);
     window.removeEventListener('message', this.windowMessageListener);

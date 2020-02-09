@@ -1,0 +1,124 @@
+<div class="modal-content">
+  <div class="modal-header">
+    <h5 class="modal-title" [translate]="'status.widget.title_manage_widget'">Manage Widget</h5>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+      (click)="activeModal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body" [ngSwitch]="widget.component">
+    <div *ngSwitchCase="'WeatherWidgetComponent'">
+      <div class="alert alert-primary" role="alert" [translate]="'status.widget.weather.label_add_city_instructions'">
+        To enable the weather widget please search for your city name in English.
+      </div>
+
+      <label for="city-search-input" [translate]="'status.widget.weather.label_search_for_your_city'">
+        Search for your city:
+      </label>
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <span class="input-group-text" id="">
+            <i class="fas" [ngClass]="{'fa-sync fa-spin': searching, 'fa-city': !searching}"></i>
+          </span>
+        </div>
+        <input id="city-search-input" type="text" class="form-control" [ngbTypeahead]="searchCountryCodes"
+          [resultFormatter]="searchCountryCodeFormatter" [inputFormatter]="searchCountryCodeFormatter"
+          [editable]='false' [(ngModel)]="widget.location" />
+      </div>
+      <p class="muted grey-text font-italic text-center">
+        Weather data is provided by OpenWeather.
+      </p>
+    </div>
+    <div *ngSwitchCase="'AccessoriesWidgetComponent'">
+      <div class="alert alert-primary" role="alert"
+        [translate]="'status.widget.accessories.label_choose_accessories_to_display'">
+        Choose the Accessories to display in this widget from the Accessories tab.
+      </div>
+      <div class="text-center">
+        <a class="btn btn-primary" routerLink="/accessories" (click)="activeModal.dismiss()"
+          [translate]="'accessories.title_accessories'">Accessories</a>
+      </div>
+    </div>
+    <div *ngSwitchCase="'HomebridgeLogsWidgetComponent'">
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label" [translate]="'status.widget.label_font_size'">Font Size</label>
+        <div class="col-sm-8">
+          <select class="form-control" [(ngModel)]="widget.fontSize">
+            <option *ngFor="let size of fontSizes" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label" [translate]="'status.widget.label_font_weight'">Font Weight</label>
+        <div class="col-sm-8">
+          <select class="form-control" [(ngModel)]="widget.fontWeight">
+            <option *ngFor="let weight of fontWeights" [value]="weight">{{ weight }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div *ngSwitchCase="'TerminalWidgetComponent'">
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label" [translate]="'status.widget.label_font_size'">Font Size</label>
+        <div class="col-sm-8">
+          <select class="form-control" [(ngModel)]="widget.fontSize">
+            <option *ngFor="let size of fontSizes" [value]="size">{{ size }}</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label" [translate]="'status.widget.label_font_weight'">Font Weight</label>
+        <div class="col-sm-8">
+          <select class="form-control" [(ngModel)]="widget.fontWeight">
+            <option *ngFor="let weight of fontWeights" [value]="weight">{{ weight }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div *ngSwitchCase="'ClockWidgetComponent'">
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label" [translate]="'status.widget.label_clock_timeformat'">
+          Time Format
+        </label>
+        <div class="col-sm-8">
+          <select class="form-control" [(ngModel)]="widget.timeFormat">
+            <option *ngFor="let timeFormat of timeFormats" [value]="timeFormat">{{ currentDate | date:timeFormat }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <label class="col-sm-4 col-form-label" [translate]="'status.widget.label_clock_dateformat'">
+          Date Format
+        </label>
+        <div class="col-sm-8">
+          <select class="form-control" [(ngModel)]="widget.dateFormat">
+            <option *ngFor="let dateFormat of dateFormats" [value]="dateFormat">{{ currentDate | date:dateFormat }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group row">
+        <div class="col-sm-8">
+          <div class="form-group form-check pt-1">
+            <input type="checkbox" class="form-check-input" id="hideOnMobile" [(ngModel)]="widget.hideOnMobile">
+            <label class="form-check-label" for="hideOnMobile" [translate]="'status.widget.label_hide_on_mobile'">
+              Hide in compact view (mobile displays)
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class=" text-center" *ngSwitchDefault>
+      <h6 [translate]="'status.widget.label_widget_has_no_options'">This widget has no options</h6>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-danger mr-auto" data-dismiss="modal" (click)="activeModal.close('remove')"
+      placement="right" ngbTooltip="{{ 'status.widget.label_remove_widget' | translate }}">
+      <i class="fas fa-trash-alt"></i>
+    </button>
+    <button type="button" class="btn btn-primary" data-dismiss="modal" (click)="activeModal.dismiss('Cross click')"
+      [translate]="'form.button_close'">Close</button>
+  </div>
+</div>

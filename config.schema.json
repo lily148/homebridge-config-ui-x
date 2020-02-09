@@ -145,22 +145,12 @@
             "enum": [
               "dark-mode"
             ]
-          },
-          {
-            "title": "Dark Mode (Old Version)",
-            "enum": [
-              "dark-mode-v1"
-            ]
           }
         ],
         "required": true
       },
       "restart": {
         "title": "Restart Command",
-        "type": "string"
-      },
-      "temp": {
-        "title": "Path to OS Temp File",
         "type": "string"
       },
       "tempUnits": {
@@ -209,10 +199,6 @@
       },
       "standalone": {
         "title": "Tell Homebridge the plugin is operating in standalone mode",
-        "type": "boolean"
-      },
-      "websocketCompatibilityMode": {
-        "title": " Run the web socket connection in compatibility mode",
         "type": "boolean"
       },
       "sessionTimeout": {

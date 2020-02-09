@@ -37,7 +37,7 @@ export class ConfigEditorService {
     }
 
     if (!config.bridge.port) {
-      config.bridge.port = 51826;
+      config.bridge.port = Math.floor(Math.random() * (52000 - 51000 + 1) + 51000);
     }
 
     if (!config.bridge.username) {
@@ -72,6 +72,9 @@ export class ConfigEditorService {
     fs.writeJsonSync(this.configService.configPath, config, { spaces: 4 });
 
     this.logger.log('Changes to config.json saved.');
+
+    // parse the config for ui settings
+    this.configService.parseConfig(config);
 
     return config;
   }

@@ -1,58 +1,93 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrService } from 'ngx-toastr';
-import 'brace/theme/xcode';
-import 'brace/mode/json';
+import { NgxEditorModel } from 'ngx-monaco-editor';
 
 import { ApiService } from '../../core/api.service';
+import { AuthService } from '../../core/auth/auth.service';
 import { MobileDetectService } from '../../core/mobile-detect.service';
+import { MonacoEditorService } from '../../core/monaco-editor.service';
 import { ConfigRestoreBackupComponent } from './config-restore-backup/config.restore-backup.component';
-import { ActivatedRoute } from '@angular/router';
-import { AceEditorComponent } from 'ng2-ace-editor';
-
-declare var ace: any;
 
 @Component({
   selector: 'app-config',
   templateUrl: './config-editor.component.html',
 })
-export class ConfigEditorComponent implements OnInit {
-  @ViewChild('editor', { static: false }) editor: AceEditorComponent;
-
+export class ConfigEditorComponent implements OnInit, OnDestroy {
   public homebridgeConfig: string;
   public saveInProgress: boolean;
   public isMobile: any = false;
   public backupUrl: string;
-  public options: any = { printMargin: false };
-  public currentMarker;
+
+  public monacoEditor;
+  public editorOptions = {
+    language: 'json',
+    theme: this.$auth.theme === 'dark-mode' ? 'vs-dark' : 'vs-light',
+    automaticLayout: true,
+  };
+
+  private editorDecoractions = [];
+  public monacoEditorModel: NgxEditorModel;
+
+  private lastHeight: number;
+  private visualViewPortEventCallback: () => void;
 
   constructor(
+    private $auth: AuthService,
     private $api: ApiService,
     private $md: MobileDetectService,
+    private $monacoEditor: MonacoEditorService,
     public $toastr: ToastrService,
     private $route: ActivatedRoute,
     private translate: TranslateService,
     private modalService: NgbModal,
   ) {
     this.isMobile = this.$md.detect.mobile();
-
-    // remove editor gutter on small screen devices
-    if (this.$md.detect.phone()) {
-      this.options.showGutter = false;
-    }
-
-    // make font size 16px on touch devices to prevent zoom
-    if (this.$md.detect.mobile()) {
-      this.options.fontSize = '16px';
-    }
   }
 
   ngOnInit() {
+    // capture viewport events
+    this.visualViewPortEventCallback = () => this.visualViewPortChanged();
+    this.lastHeight = window.innerHeight;
+
+    if (window['visualViewport'] && !this.isMobile) {
+      window['visualViewport'].addEventListener('resize', this.visualViewPortEventCallback, true);
+      this.$md.disableTouchMove();
+    }
+
     this.$route.data
       .subscribe((data: { config: string }) => {
         this.homebridgeConfig = data.config;
       });
+
+    // setup the base monaco editor model
+    this.monacoEditorModel = {
+      value: '{}',
+      language: 'json',
+      uri: window['monaco'] ? window['monaco'].Uri.parse('a://homebridge/config.json') : undefined,
+    };
+
+    //  if monaco is not loaded yet, wait for it, otherwise setup the editor now
+    if (!window['monaco']) {
+      this.$monacoEditor.readyEvent.subscribe({
+        next: () => {
+          this.setMonacoEditorModel();
+        },
+      });
+    } else {
+      this.setMonacoEditorModel();
+    }
+  }
+
+  /**
+   * Called when the monaco editor is ready
+   */
+  onEditorInit(editor) {
+    this.monacoEditor = editor;
+    this.monacoEditor.getModel().setValue(this.homebridgeConfig);
+    window['editor'] = editor;
   }
 
   async onSave() {
@@ -60,14 +95,41 @@ export class ConfigEditorComponent implements OnInit {
       return;
     }
 
-    if (this.currentMarker) {
-      this.editor.getEditor().session.removeMarker(this.currentMarker);
+    // hide decorations
+    if (this.monacoEditor) {
+      this.editorDecoractions = this.monacoEditor.deltaDecorations(this.editorDecoractions, []);
     }
 
     this.saveInProgress = true;
     // verify homebridgeConfig contains valid json
     try {
+
+      // get the value from the editor
+      if (!this.isMobile) {
+        // format the document
+        await this.monacoEditor.getAction('editor.action.formatDocument').run();
+
+        // check for issues, specifically block saving if there are any duplicate keys
+        const issues = window['monaco'].editor.getModelMarkers({ owner: 'json' });
+
+        for (const issue of issues) {
+          if (issue.message === 'Duplicate object key') {
+            this.saveInProgress = false;
+            this.$toastr.error(
+              this.translate.instant('config.toast_config_invalid_json'),
+              this.translate.instant('config.toast_title_config_syntax_error'),
+            );
+            return;
+          }
+        }
+
+        // set the value
+        this.homebridgeConfig = this.monacoEditor.getModel().getValue();
+      }
+
+      // parse the JSON
       const config = JSON.parse(this.homebridgeConfig);
+
       // ensure it's formatted so errors can be easily spotted
       this.homebridgeConfig = JSON.stringify(config, null, 4);
 
@@ -134,7 +196,34 @@ export class ConfigEditorComponent implements OnInit {
               this.translate.instant('config.toast_click_save_to_confirm_backup_restore'),
               this.translate.instant('config.toast_title_backup_loaded'),
             );
+
             this.homebridgeConfig = JSON.stringify(json, null, 4);
+
+            // update the editor
+            if (this.monacoEditor) {
+              // remove all decorations
+              this.editorDecoractions = this.monacoEditor.deltaDecorations(this.editorDecoractions, []);
+
+              // remove existing config
+              this.monacoEditor.executeEdits('beautifier', [
+                {
+                  identifier: 'delete' as any,
+                  range: new monaco.Range(1, 1, this.monacoEditor.getModel().getLineCount() + 10, 1),
+                  text: '',
+                  forceMoveMarkers: true,
+                },
+              ]);
+
+              // inject the restored content
+              this.monacoEditor.executeEdits('beautifier', [
+                {
+                  identifier: 'insert' as any,
+                  range: new monaco.Range(1, 1, 1, 1),
+                  text: this.homebridgeConfig,
+                  forceMoveMarkers: true,
+                },
+              ]);
+            }
           },
           err => this.$toastr.error(err.error.message || 'Failed to load config backup', this.translate.instant('toast.title_error')),
         );
@@ -190,17 +279,226 @@ export class ConfigEditorComponent implements OnInit {
     return true;
   }
 
+  /**
+   * Highlight the problematic rows in the editor
+   */
   highlightOffendingArrayItem(block) {
-    // figure out which lines the offending block spans
-    block = JSON.stringify(block, null, 4).split('\n').map(x => x.trim()).join('\n');
-    const trimedConfig = this.homebridgeConfig.split('\n').map(x => x.trim()).join('\n');
-    const markedConfig = trimedConfig.replace(`\n${block}\n`, `\n____START____\n${block}\n____END____\n`);
-    const from = markedConfig.split('\n').findIndex(x => x === '____START____');
-    const to = markedConfig.split('\n').findIndex(x => x === '____END____') - 2;
+    if (!this.monacoEditor) {
+      return;
+    }
 
-    // highlight those lines
-    const Range = ace.require('ace/range').Range;
-    this.currentMarker = this.editor.getEditor().session.addMarker(new Range(from, 0, to, 1), 'hb-editor-block-error', 'fullLine');
+    // figure out which lines the offending block spans, add leading space as per formatting rules
+    block = JSON.stringify(block, null, 4).split('\n').map(x => '        ' + x).join('\n');
+
+    setTimeout(() => {
+      const matches = this.monacoEditor.getModel().findMatches(block);
+
+      if (matches.length) {
+        const matchRange = matches[0].range;
+        const range = new monaco.Range(
+          matchRange.startLineNumber,
+          matchRange.startColumn,
+          matchRange.endLineNumber,
+          matchRange.endColumn,
+        );
+
+        this.editorDecoractions = this.monacoEditor.deltaDecorations(this.editorDecoractions, [
+          { range: range, options: { isWholeLine: true, linesDecorationsClassName: 'hb-monaco-editor-line-error' } },
+        ]);
+      }
+    }, 200);
+  }
+
+  /**
+   * Setup a json schema object used to check the config against
+   */
+  setMonacoEditorModel() {
+    if (window['monaco'].languages.json.jsonDefaults.diagnosticsOptions.schemas.some(x => x.uri === 'http://homebridge/config.json')) {
+      return;
+    }
+
+    const uri = monaco.Uri.parse('a://homebridge/config.json');
+
+    window['monaco'].languages.json.jsonDefaults.setDiagnosticsOptions({
+      allowComments: false,
+      validate: true,
+      schemas: [
+        {
+          uri: 'http://homebridge/config.json',
+          fileMatch: [uri.toString()],
+          schema: {
+            type: 'object',
+            required: ['bridge'],
+            properties: {
+              bridge: {
+                type: 'object',
+                required: ['name', 'username', 'port', 'pin'],
+                properties: {
+                  name: {
+                    type: 'string',
+                    description: 'The Homebridge instance name.\n' +
+                      'This should be unique if you are running multiple instances of Homebridge.',
+                    default: 'Homebridge',
+                  },
+                  username: {
+                    type: 'string',
+                    description: 'Homebridge username must be 6 pairs of colon-separated hexadecimal characters (A-F 0-9).\nYou should change this pin if you need to re-pair your instance with HomeKit.\nExample: 0E:89:49:64:91:86',
+                    default: '0E:89:49:64:91:86',
+                    pattern: '^([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2}$',
+                  },
+                  port: {
+                    type: 'number',
+                    description: 'The port Homebridge listens on.\nIf running more than one instance of Homebridge on the same server make sure each instance is given a unique port.',
+                    default: 51173,
+                    minimum: 1025,
+                    maximum: 65534,
+                  },
+                  pin: {
+                    type: 'string',
+                    description: 'The Homebridge instance pin.\nThis is used when pairing Homebridge to HomeKit.\nExample: 630-27-655',
+                    default: '630-27-655',
+                    pattern: '^([0-9]{3}-[0-9]{2}-[0-9]{3})$',
+                  },
+                },
+                default: { name: 'Homebridge', username: '0E:89:49:64:91:86', port: 51173, pin: '630-27-655' },
+              },
+              mdns: {
+                type: 'object',
+                description: 'Tell Homebridge to listen on a specific IP address. This is useful if your server has multiple interfaces.',
+                required: ['interface'],
+                properties: {
+                  interface: {
+                    type: 'string',
+                    description: 'The IP address of the interface you want Homebridge to listen on.',
+                  },
+                },
+                default: { interface: '' },
+              },
+              plugins: {
+                type: 'array',
+                description: 'An array of plugins that should be selectively enabled. Remove this array to enable all plugins.',
+                items: {
+                  type: 'string',
+                  description: 'The full plugin npm package name.\nExample: homebridge-dummy',
+                },
+                default: ['homebridge-config-ui-x'],
+              },
+              ports: {
+                type: 'object',
+                description: 'The range of ports that should be used for certain accessories like Cameras and TVs',
+                required: ['start', 'end'],
+                properties: {
+                  start: {
+                    type: 'number',
+                    default: 52100,
+                    minimum: 1025,
+                    maximum: 65534,
+                  },
+                  end: {
+                    type: 'number',
+                    default: 52150,
+                    minimum: 1025,
+                    maximum: 65534,
+                  },
+                },
+                default: {
+                  start: 52100,
+                  end: 52150,
+                },
+              },
+              platforms: {
+                type: 'array',
+                description: 'Plugins that expose a "Platform" should have there config entered in this array.\nSeperate each plugin config block using a comma.',
+                items: {
+                  type: 'object',
+                  required: ['platform'],
+                  anyOf: [
+                    {
+                      type: 'object',
+                      required: ['platform'],
+                      properties: {
+                        platform: {
+                          type: 'string',
+                          description: 'This is used by Homebridge to identify which plugin this platform belongs to.',
+                          not: { enum: ['config'] },
+                        },
+                        name: {
+                          type: 'string',
+                          description: 'The name of the platform.',
+                        },
+                      },
+                    },
+                    {
+                      type: 'object',
+                      properties: {
+                        platform: {
+                          type: 'string',
+                          description: 'Homebridge Config UI X platform name must be set to "config".\nDo Not Change!',
+                          oneOf: [
+                            { enum: 'config' },
+                          ],
+                        },
+                        name: {
+                          type: 'string',
+                          description: 'The name used in the Homebridge log',
+                        },
+                      },
+                    },
+                  ],
+                },
+              },
+              accessories: {
+                type: 'array',
+                description: 'Plugins that expose a "Accessory" should have there config entered in this array.\nSeperate each plugin config block using a comma.',
+                items: {
+                  type: 'object',
+                  required: ['accessory'],
+                  properties: {
+                    accessory: {
+                      type: 'string',
+                      description: 'This is used by Homebridge to identify which plugin this accessory belongs to.',
+                    },
+                    name: {
+                      type: 'string',
+                      description: 'The name of the accessory.',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    });
+
+    this.monacoEditorModel.uri = monaco.Uri.parse('a://homebridge/config.json');
+  }
+
+  visualViewPortChanged() {
+    if (this.lastHeight < window['visualViewport'].height) {
+      (document.activeElement as HTMLElement).blur();
+    }
+
+    if (window['visualViewport'].height < window.innerHeight) {
+      // keyboard may have opened
+      this.$md.enableTouchMove();
+      this.lastHeight = window['visualViewport'].height;
+    } else if (window['visualViewport'].height === window.innerHeight) {
+      // keyboard is closed
+      this.$md.disableTouchMove();
+      this.lastHeight = window['visualViewport'].height;
+    }
+  }
+
+  ngOnDestroy() {
+    if (window['visualViewport']) {
+      window['visualViewport'].removeEventListener('resize', this.visualViewPortEventCallback, true);
+      this.$md.enableTouchMove();
+    }
+
+    if (this.monacoEditor) {
+      this.monacoEditor.dispose();
+    }
   }
 
 }

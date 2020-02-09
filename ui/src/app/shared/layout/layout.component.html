@@ -21,7 +21,7 @@
         </li>
       </ul>
 
-      <ul class="navbar-nav nav-flex-icons">
+      <ul class="navbar-nav nav-flex-icons hb-nav-right">
         <li class="nav-item waves-effect waves-light" routerLinkActive="active" placement="bottom"
           ngbTooltip="Refresh Plugin Service" container="body">
           <a class="nav-link" routerLink="/restart">
@@ -29,10 +29,10 @@
           </a>
         </li>
 
-        <li class="nav-item dropdown" *ngIf="$auth.env.runningInDocker && $auth.user.admin">
+        <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle waves-effect waves-light" data-toggle="dropdown" aria-haspopup="true"
             aria-expanded="false">
-            <i class="fab fa-docker"></i>
+            <i class="fas fa-ellipsis-v nav-menu-icon"></i>
           </a>
         </li>
 

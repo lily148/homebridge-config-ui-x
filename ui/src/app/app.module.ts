@@ -5,6 +5,8 @@ import { NgModule } from '@angular/core';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { ToastrModule } from 'ngx-toastr';
 import { TranslateModule } from '@ngx-translate/core';
+import { MonacoEditorModule } from 'ngx-monaco-editor';
+import { DragulaModule } from 'ng2-dragula';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -13,6 +15,8 @@ import { CoreModule } from './core/core.module';
 import { AuthModule } from './core/auth/auth.module';
 import { RestartModule } from './modules/restart/restart.module';
 import { StatusModule } from './modules/status/status.module';
+
+import { onMonacoLoad } from './core/monaco-editor.service';
 
 @NgModule({
   declarations: [
@@ -33,6 +37,21 @@ import { StatusModule } from './modules/status/status.module';
       positionClass: 'toast-bottom-right',
     }),
     NgbModule,
+    MonacoEditorModule.forRoot({
+      defaultOptions: {
+        scrollBeyondLastLine: false,
+        quickSuggestions: true,
+        parameterHints: true,
+        formatOnType: true,
+        formatOnPaste: true,
+        folding: false,
+        minimap: {
+          enabled: false,
+        },
+      },
+      onMonacoLoad,
+    }),
+    DragulaModule.forRoot(),
     CoreModule,
     AuthModule,
     StatusModule,

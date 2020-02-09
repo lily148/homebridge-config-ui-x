@@ -29,12 +29,14 @@ export class WsService {
   public connectToNamespace(namespace: string): IoNamespace {
     if (this.namespaceConnectionCache[namespace]) {
       /* connection to namespace already exists */
-      const io = this.namespaceConnectionCache[namespace];
+      const io: IoNamespace = this.namespaceConnectionCache[namespace];
       io.connected = new Subject();
 
       // broadcast to sbuscribers that the connection is ready
       setTimeout(() => {
-        io.connected.next();
+        if (io.socket.connected) {
+          io.connected.next();
+        }
       });
 
       // watch for re-connections, and broadcast
@@ -73,13 +75,16 @@ export class WsService {
     }
   }
 
+  public getExistingNamespace(namespace: string): IoNamespace {
+    return this.namespaceConnectionCache[namespace];
+  }
+
   /**
    * Establish a connection to the namespace
    * @param namespace
    */
   private establishConnectionToNamespace(namespace: string): IoNamespace {
     const socket: SocketIOClient.Socket = connect(`${environment.api.socket}/${namespace}`, {
-      transports: this.$auth.env.websocketCompatibilityMode ? undefined : ['websocket'],
       query: {
         token: this.$auth.token,
       },

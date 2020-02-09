@@ -3,12 +3,17 @@ import * as color from 'bash-color';
 import * as semver from 'semver';
 import * as pty from 'node-pty-prebuilt-multiarch';
 import * as child_process from 'child_process';
+import * as fs from 'fs-extra';
 import { Injectable } from '@nestjs/common';
+import { Tail } from 'tail';
 import { ConfigService } from '../../core/config/config.service';
 
 @Injectable()
 export class LogService {
   private command;
+  private useNative = false;
+  private ending = false;
+  private nativeTail: Tail;
 
   constructor(
     private configService: ConfigService,
@@ -17,6 +22,8 @@ export class LogService {
       this.logNotConfigured();
     } else if (this.configService.ui.log.method === 'file' && this.configService.ui.log.path) {
       this.logFromFile();
+    } else if (this.configService.ui.log.method === 'native' && this.configService.ui.log.path) {
+      this.useNative = true;
     } else if (this.configService.ui.log.method === 'systemd') {
       this.logFromSystemd();
     } else if (this.configService.ui.log.method === 'custom' && this.configService.ui.log.command) {
@@ -31,6 +38,8 @@ export class LogService {
    * @param client
    */
   public connect(client, size) {
+    this.ending = false;
+
     if (!semver.satisfies(process.version, `>=${this.configService.minimumNodeVersion}`)) {
       client.emit('stdout', color.yellow(`Node.js v${this.configService.minimumNodeVersion} higher is required for ${this.configService.name}.\n\r`));
       client.emit('stdout', color.yellow(`You may experience issues while running on Node.js ${process.version}.\n\r\n\r`));
@@ -40,6 +49,10 @@ export class LogService {
       client.emit('stdout', color.cyan(`Loading logs using "${this.configService.ui.log.method}" method...\r\n`));
       client.emit('stdout', color.cyan(`CMD: ${this.command.join(' ')}\r\n\r\n`));
       this.tailLog(client, size);
+    } else if (this.useNative) {
+      client.emit('stdout', color.cyan(`Loading logs using native method...\r\n`));
+      client.emit('stdout', color.cyan(`File: ${this.configService.ui.log.path}\r\n\r\n`));
+      this.tailLogFromFileNative(client);
     } else {
       client.emit('stdout', color.red(`Cannot show logs. "log" option is not configured correctly in your Homebridge config.json file.\r\n\r\n`));
       client.emit('stdout', color.cyan(`See https://github.com/oznu/homebridge-config-ui-x#log-viewer-configuration for instructions.\r\n`));
@@ -70,10 +83,12 @@ export class LogService {
     // send an error message to the client if the log tailing process exits early
     term.onExit((code) => {
       try {
-        client.emit('stdout', '\n\r');
-        client.emit('stdout', color.red(`The log tail command "${command.join(' ')}" exited with code ${code}.\n\r`));
-        client.emit('stdout', color.red(`Please check the command in your config.json is correct.\n\r\n\r`));
-        client.emit('stdout', color.cyan(`See https://github.com/oznu/homebridge-config-ui-x#log-viewer-configuration for instructions.\r\n`));
+        if (!this.ending) {
+          client.emit('stdout', '\n\r');
+          client.emit('stdout', color.red(`The log tail command "${command.join(' ')}" exited with code ${code.exitCode}.\n\r`));
+          client.emit('stdout', color.red(`Please check the command in your config.json is correct.\n\r\n\r`));
+          client.emit('stdout', color.cyan(`See https://github.com/oznu/homebridge-config-ui-x#log-viewer-configuration for instructions.\r\n`));
+        }
       } catch (e) {
         // the client socket probably closed
       }
@@ -88,6 +103,8 @@ export class LogService {
 
     // cleanup on disconnect
     const onEnd = () => {
+      this.ending = true;
+
       client.removeAllListeners('resize');
       client.removeAllListeners('end');
       client.removeAllListeners('disconnect');
@@ -138,6 +155,68 @@ export class LogService {
     }
 
     this.command = command;
+  }
+
+  /**
+   * Logs from a file without spawning a child_process
+   */
+  private async tailLogFromFileNative(client) {
+    if (!fs.existsSync(this.configService.ui.log.path)) {
+      client.emit('stdout', '\n\r');
+      client.emit('stdout', color.red(`No log file exists at path: ${this.configService.ui.log.path}\n\r`));
+    }
+
+    // read the first 500 lines of the log and emit to the client
+    try {
+      const logFile = (await fs.readFile(this.configService.ui.log.path, 'utf8')).split('\n').slice(-500).join('\n\r');
+      client.emit('stdout', logFile);
+    } catch (e) {
+      client.emit('stdout', color.red(`Failed to read log file: ${e.message}\n\r`));
+      return;
+    }
+
+    if (!this.nativeTail) {
+      this.nativeTail = new Tail(this.configService.ui.log.path, {
+        fromBeginning: false,
+        useWatchFile: true,
+        fsWatchOptions: {
+          interval: 200,
+        },
+      });
+    } else if (this.nativeTail.listenerCount('line') === 0) {
+      this.nativeTail.watch();
+    }
+
+    // watch for lines and emit to client
+    const onLine = (line) => {
+      client.emit('stdout', line + `\n\r`);
+    };
+
+    const onError = (err) => {
+      client.emit('stdout', err.message + `\n\r`);
+    };
+
+    this.nativeTail.on('line', onLine);
+    this.nativeTail.on('error', onError);
+
+    // cleanup on disconnect
+    const onEnd = () => {
+      this.ending = true;
+
+      this.nativeTail.removeListener('line', onLine);
+      this.nativeTail.removeListener('error', onError);
+
+      // stop watching the file if there are no other watchers
+      if (this.nativeTail.listenerCount('line') === 0) {
+        this.nativeTail.unwatch();
+      }
+
+      client.removeAllListeners('end');
+      client.removeAllListeners('disconnect');
+    };
+
+    client.on('end', onEnd.bind(this));
+    client.on('disconnect', onEnd.bind(this));
   }
 
   /**

@@ -2,6 +2,183 @@
 
 All notable changes to this project will be documented in this file. This project uses [Semantic Versioning](https://semver.org/).
 
+## NEXT
+
+### Notable Changes
+
+* **System:** The UI no longer requires a restart to apply changes to certain settings (such as theme, temperature units, sudo etc.)
+
+### Other Changes 
+
+* **i18n:** Improvements to Polish language translations ([#519](https://github.com/oznu/homebridge-config-ui-x/pull/527))
+* **i18n:** Improvements to German language translations ([#519](https://github.com/oznu/homebridge-config-ui-x/pull/529))
+* **i18n:** Improvements to Russian language translations ([#519](https://github.com/oznu/homebridge-config-ui-x/pull/531))
+
+## 4.10.0 (2020-02-05)
+
+### Notable Changes
+
+* **Plugins:** Added a confirmation box when uninstalling plugins
+* **Plugins:** Added an option to have a plugin's config removed from the `config.json` when the plugin is being uninstalled (only plugins that implement the [Plugins Settings GUI](https://github.com/oznu/homebridge-config-ui-x/wiki/Developers:-Plugin-Settings-GUI) support this feature)
+* **System:** The UI will now attempt to rebuild it's own modules after a Node.js upgrade
+* **System:** Added the ability for [`hb-service`](https://github.com/oznu/homebridge-config-ui-x/wiki/Homebridge-Service-Command) users to clear the Homebridge cached accessories from the UI (without doing a full Homebridge reset)
+* **Dashboard:** Weather widget now supports local translations of the current weather description ([#515](https://github.com/oznu/homebridge-config-ui-x/issues/515))
+
+### Other Changes 
+
+* **i18n:** Improvements to Polish language translations ([#519](https://github.com/oznu/homebridge-config-ui-x/pull/519))
+* **hb-service:** Adjusted the [`hb-service rebuild`](https://github.com/oznu/homebridge-config-ui-x/wiki/Homebridge-Service-Command) command to just rebuild the modules used by Homebridge Config UI X. This command should now work to fix the modules used by Homebridge Config UI X on any setup - not just those using `hb-service` as a process supervisor
+* **Accessory Control:** Minor tweaks to the Speaker accessory type
+* Updated npm dependencies
+
+## 4.9.0 (2020-01-29)
+
+### Notable Changes
+
+* **Accessory Control:** [@LaborEtArs](https://github.com/LaborEtArs) added support for Speaker and Battery Service accessory types ([#500](https://github.com/oznu/homebridge-config-ui-x/pull/500))
+
+### Other Changes
+
+* **i18n:** Improvements to Russian language translations ([#502](https://github.com/oznu/homebridge-config-ui-x/pull/502))
+* **i18n:** Improvements to German language translations ([#512](https://github.com/oznu/homebridge-config-ui-x/pull/512))
+* **Plugins:** Prevent the dynamic `users` config for the [homebridge-hue](https://github.com/ebaauw/homebridge-hue) plugin from being deleted when using the Plugin Config GUI ([#417](https://github.com/oznu/homebridge-config-ui-x/issues/417))
+* **Accessory Control:** `CameraRTPStreamManagement` accessory types will no longer be displayed
+* Updated npm dependencies
+
+## 4.8.1 (2020-01-22)
+
+### Notable Changes
+
+* **hb-service:** Added an option to the [`hb-service`](https://github.com/oznu/homebridge-config-ui-x/wiki/Homebridge-Service-Command) to help users rebuild their Node.js modules after a major Node.js version update
+
+### Bug Fixes
+
+* **System:** Fixed an issue causing the UI to crash when running in a FreeBSD Jailed Shell ([#488](https://github.com/oznu/homebridge-config-ui-x/issues/488))
+* **System:** Fixed an issue that may have caused Homebridge not to restart when a certain plugin was installed when running on Docker ([#494](https://github.com/oznu/homebridge-config-ui-x/issues/494))
+
+## 4.8.0 (2020-01-18)
+
+### Notable Changes
+
+* **System:** Prevent in-app updates to the UI for Windows 10 users. Windows file-locking prevents online updates from completing successfully while Homebridge Config UI X is still running, this can leave Homebridge in an unstable state. After this update Windows users will need to manually stop the Homebridge service, then manually update the UI using npm. **Existing Windows 10 users:** please perform this update manually after stopping the Homebridge service!
+* **Dashboard:** Added a Clock widget, users can select the time format they wish the clock to display ([#459](https://github.com/oznu/homebridge-config-ui-x/issues/459))
+* **hb-service:** Added the ability for [`hb-service`](https://github.com/oznu/homebridge-config-ui-x/wiki/Homebridge-Service-Command) users to set the Homebridge `-D` and `-R` flags, as well as the `DEBUG` and `NODE_OPTIONS` environment variables directly from the UI ([#472](https://github.com/oznu/homebridge-config-ui-x/issues/472))
+
+<p align="center">
+  <img width="600px" src="https://user-images.githubusercontent.com/3979615/72317538-b92b6780-36ed-11ea-8001-77921be18417.png">
+</p>
+
+### Other Changes
+
+* **i18n:** Improvements to Polish language translations ([#467](https://github.com/oznu/homebridge-config-ui-x/pull/467))
+* **i18n:** Improvements to Swedish language translations ([#476](https://github.com/oznu/homebridge-config-ui-x/pull/476))
+* **i18n:** Improvements to German language translations ([#482](https://github.com/oznu/homebridge-config-ui-x/pull/482))
+* **Dashboard:** Node.js / npm version warning icons will now only show up if you are using an unsupported version of Node.js, the latest available version can still be viewed by hovering over the current version
+* **Plugins**: Added seemless account linking support for the [Homebridge Honeywell Home](https://github.com/donavanbecker/homebridge-honeywell-home#readme) plugin
+* **Plugins**: Added the ability for [Homebridge Ring](https://github.com/dgreif/ring/tree/master/homebridge) users to get their Ring account `refreshToken` directly from the UI ([#486](https://github.com/oznu/homebridge-config-ui-x/pull/486))
+
+### Bug Fixes
+
+* **System:** Fixed an issue causing the UI to crash when running in a FreeBSD Jailed Shell ([#461](https://github.com/oznu/homebridge-config-ui-x/issues/461))
+* **System:** Prevent an unnecessary log message showing up in the logs on certain Linux distros ([#466](https://github.com/oznu/homebridge-config-ui-x/issues/466))
+* **System:** Fixed a bug that caused the UI to crash when running in debug mode in production ([#469](https://github.com/oznu/homebridge-config-ui-x/issues/469))
+* **Dashboard:** Fixed a bug where the "Plugin Status" icon was not changing when there were updates available ([#443](https://github.com/oznu/homebridge-config-ui-x/issues/443))
+* **Auth:** Fixed a warning about a depreciated option that was in use ([#473](https://github.com/oznu/homebridge-config-ui-x/issues/473))
+* **Config Editor:** Fixed a issue that prevented the on-screen keyboard from being able to be displayed after it was dismissed on an iPad Pro ([#480](https://github.com/oznu/homebridge-config-ui-x/issues/480))
+
+## 4.7.0 (2020-01-11)
+
+### New Dashboard
+
+This release comes with a brand new status dashboard that features a fully customisable, widget-based design. Users can decide which widgets they wish to enable and position and resize them as they like.
+
+<p align="center">
+  <img width="600px" src="https://user-images.githubusercontent.com/3979615/71886653-b16d3f80-3190-11ea-9ff8-49dc4ae4fff0.png">
+</p>
+
+New widgets include:
+
+* **Homebridge Status Widget** - Homebridge version and update check, current Homebridge service status and Homebridge plugins update check
+* **CPU Widget** - shows the current cpu load (now much more accurate) and CPU temperature when available, plus a graph of the last 0-10 minutes cpu load
+* **Memory Widget** - shows the total and available memory (previously "Free" memory as show which is not a reliable indicator of "Available" memory), plus a graph of the last 0-10 minutes free memory
+* **Uptime Widget** - shows the server uptime and the process uptime
+* **QR Code Widget** - shows the pairing QR Code and Homebridge PIN
+* **Homebridge Logs Widget** - shows the Homebridge logs stream
+* **Homebridge Terminal Widget** - an interactive terminal (only available when interactive web terminals are enabled)
+* **System Information Widget** - shows details about your server and homebridge setup
+* **Weather Widget** - shows the current weather for the set location (may add a forecast later)
+* **Accessories Widget** - display and control the accessories you select
+
+### Simple Service Installer
+
+This release expands the `hb-service` command to support macOS and Linux in addition to Windows 10. This command allows you to setup a Homebridge instance as a service in seconds.
+
+Running `hb-service install` will setup Homebridge and Homebridge Config UI X to run as a service with auto-start on boot. The same command works across Linux, macOS and Windows 10.
+
+<p align="center">
+  <img width="600px" src="https://user-images.githubusercontent.com/3979615/71888439-4291e580-3194-11ea-8687-a3d58f94ba47.gif">
+</p>
+
+Notable Features:
+
+* The UI will remain running even if there is an issue preventing Homebridge from starting
+* Easily setup and manage multiple homebridge instances
+* The ability to start, stop, restart and view the logs of your Homebridge instances using the `hb-service` commands
+* [See the wiki for further details](https://github.com/oznu/homebridge-config-ui-x/wiki/Homebridge-Service-Command)
+
+### New Config Editor
+
+The config editor (non-mobile) has had the Ace Editor replaced with the [Microsoft Monaco Editor](https://microsoft.github.io/monaco-editor/) (the code editor that powers VS Code).
+
+This allow for much more powerful JSON syntax checking, more helpful error messages and the new ability to detect duplicate keys in object (like when a second platforms[] array is added by mistake!).
+
+<p align="center">
+  <img width="600px" src="https://user-images.githubusercontent.com/3979615/71890579-b635f180-3198-11ea-98ab-cc7b7263afd9.gif">
+</p>
+
+In addition:
+
+* Help text is now shown when hovering over the core components of the config.json
+* Autocomplete of the bridge, plugins, ports and mdns objects
+* Detect when accessory config has been added to the platform array, or vice versa
+* Warnings when the JSON does not match what is allowed by Homebridge
+
+### Other Changes
+
+* **Logs:** URLs in the log output are now clickable
+* **Status:** CPU utilization is now shown for Windows 10 users
+* **Status:** CPU temperature option, `temp`, has been removed, the CPU temperature will now automatically be displayed where possible on Linux and Windows
+* **System:** Removed the `websocketCompatibilityMode` option, this setting is now the default for all users
+* **Terminal:** The terminal now automatically respawns the shell if the shell is terminated by the user (e.g, when using CTRL+D)
+* **Accessory Control:** The right click handler on accessory tiles has been removed and replaced with a clickable cog icon in the top right hand side of each tile
+* **Themes:** The legacy Dark Mode (v1) has been removed, users will be migrated to the new Dark Mode automatically
+* **i18n:** Improvements to Simplified Chinese language translations ([#431](https://github.com/oznu/homebridge-config-ui-x/pull/431))
+* **i18n:** Improvements to German language translations ([#444](https://github.com/oznu/homebridge-config-ui-x/pull/444))
+* **i18n:** Improvements to Spanish language translations ([#445](https://github.com/oznu/homebridge-config-ui-x/pull/445))
+* **i18n:** Improvements to Polish language translations ([#446](https://github.com/oznu/homebridge-config-ui-x/pull/446))
+* Updated npm dependencies
+
+### Bug Fixes
+
+* **System:** Fixed a bug that prevented the Windows 10 service installer (`hb-service`) from working when the user's login name contained spaces
+* **Linux:** Fixed a bug where the custom shutdown command was executing the custom restart command instead ([#442](https://github.com/oznu/homebridge-config-ui-x/issues/442))
+
+## 4.6.7 (2019-12-24)
+
+### Bug Fixes
+
+* **System:** The Windows 10 service installer (`hb-service`) now configures the system firewall
+
+## 4.6.6 (2019-12-17)
+
+### Bug Fixes
+
+* **Accessory Control:** Fixed a bug that causes some accessory states not to update ([#426](https://github.com/oznu/homebridge-config-ui-x/issues/426))
+
+### Other Changes
+
+* Updated npm dependencies
+
 ## 4.6.5 (2019-12-07)
 
 ### Notable Changes
