@@ -7,31 +7,9 @@
           <i class="fas fa-cog fa-spin primary-text" *ngIf="!homebridgePkg.installedVersion"></i>
           <i class="fas fa-check-circle primary-text"
             *ngIf="homebridgePkg.installedVersion && !homebridgePkg.updateAvailable"></i>
-          <i class="fas fa-cloud-upload-alt primary-text"
+          <i class="fas fa-check-circle primary-text"
             *ngIf="homebridgePkg.installedVersion && homebridgePkg.updateAvailable"></i>
         </div>
-        <div class="align-self-center">
-          <span class="grey-text" *ngIf="!homebridgePkg.installedVersion"
-            [translate]="'status.homebridge.label_checking_for_updates'">
-            Checking for updates...
-          </span>
-          <span *ngIf="homebridgePkg.installedVersion && !homebridgePkg.updateAvailable"
-            [translate]="'status.homebridge.label_up_to_date'">
-            Up To Date
-          </span>
-          <a (click)="$plugin.upgradeHomebridge()" href="JavaScript:Void(0)" class="primary-text"
-            *ngIf="homebridgePkg.installedVersion && homebridgePkg.updateAvailable"
-            [translate]="'status.homebridge.label_update_available'" [translateParams]="homebridgePkg"
-            ngbTooltip="{{'plugins.button_upgrade' | translate}} Homebridge">
-            Update Available
-          </a>
-          <br>
-          <span class="grey-text" *ngIf="homebridgePkg.installedVersion">
-            <span [translate]="'status.homebridge.label_version'">Version</span>
-            {{ homebridgePkg.installedVersion }}
-          </span>
-        </div>
-
       </div>
     </div>
 
@@ -42,7 +20,7 @@
           <i class="fas fa-check-circle primary-text" *ngIf="homebridgeStatus.status === 'up'"></i>
         </div>
         <div class="align-self-center">
-          <span>Homebridge</span>
+          <span>Status</span>
           <br>
           <span class="grey-text" *ngIf="homebridgeStatus.status === 'up'"
             [translate]="'status.services.label_running_on_port'"
@@ -62,10 +40,6 @@
         <div class="align-self-center">
           <span [translate]="'menu.label_plugins'">Plugins</span>
           <br>
-
-          <a routerLink="/plugins" class="primary-text" *ngIf="homebridgePluginStatus.length">
-            {{ homebridgePluginStatus.length }} {{ 'status.plugins_out_of_date' | translate }}
-          </a>
           <span class="grey-text " *ngIf="!homebridgePluginStatus.length"
             [translate]="'status.services.label_not_running'">
             {{ 'status.homebridge.label_up_to_date' | translate }}
