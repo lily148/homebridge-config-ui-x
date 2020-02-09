@@ -1,20 +1,20 @@
 <div class="status-container d-flex flex-column mt-0">
 
 
-  <button *ngIf="consoleStatus === 'up' && $auth.user.admin" (click)="addWidget()"
+  <!--<button *ngIf="consoleStatus === 'up' && $auth.user.admin" (click)="addWidget()"
     class="btn btn-primary btn-floating add-widget-button"
     ngbTooltip="{{ (options.draggable.enabled ? 'status.widget.label_add_widget' : 'status.widget.label_layout_locked') | translate }}">
     <i class="fas fa-plus" [ngClass]="{
       'fa-plus': options.draggable.enabled,
       'fa-lock': !options.draggable.enabled
     }"></i>
-  </button>
+  </button>-->
 
 
   <app-spinner *ngIf="consoleStatus === 'down'"></app-spinner>
 
-<!--  <div class="row flex-column flex-grow-1">
-    <!-- <div>
+  <div class="row flex-column flex-grow-1">
+    <div>
       <button (click)="addWidget()" class="btn btn-primary">Hi</button>
     </div>
     <gridster [options]="options" class="flex-grow-1 no-scrollbars" [hidden]="consoleStatus === 'down'"
@@ -22,14 +22,14 @@
       <ng-container *ngFor="let item of dashboard">
         <gridster-item *ngIf="!(item.hideOnMobile && page.mobile)" class="widget-item" [item]="item"
           [id]="item.component">
-          <div class="gridster-item-content">
+          <!--<div class="gridster-item-content">
             <i class="fas fa-cog widget-control-button primary-text" (click)="manageWidget(item)"></i>
-          </div>
+          </div>-->
           <app-widgets [widget]="item" class="d-flex h-100 w-100"></app-widgets>
         </gridster-item>
       </ng-container>
     </gridster>
-  </div>-->
+  </div>
 
   <!--<div class="row mb-auto">
     <div class="col-md-12 text-center mb-3 grey-text">
