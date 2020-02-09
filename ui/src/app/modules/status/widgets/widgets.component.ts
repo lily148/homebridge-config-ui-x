@@ -22,16 +22,16 @@ export class WidgetsComponent implements OnInit, OnDestroy {
 
   private availableWidgets = {
     HapQrcodeWidgetComponent,
-    HomebridgeLogsWidgetComponent,
-    TerminalWidgetComponent,
-    CpuWidgetComponent,
-    MemoryWidgetComponent,
+  //  HomebridgeLogsWidgetComponent,
+  //  TerminalWidgetComponent,
+//    CpuWidgetComponent,
+//    MemoryWidgetComponent,
     UptimeWidgetComponent,
     HomebridgeStatusWidgetComponent,
-    SystemInfoWidgetComponent,
-    WeatherWidgetComponent,
-    AccessoriesWidgetComponent,
-    ClockWidgetComponent,
+//    SystemInfoWidgetComponent,
+//    WeatherWidgetComponent,
+//    AccessoriesWidgetComponent,
+//    ClockWidgetComponent,
   };
 
   private componentRef;

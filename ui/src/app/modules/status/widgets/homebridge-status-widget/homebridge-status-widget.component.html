@@ -11,9 +11,9 @@
             *ngIf="homebridgePkg.installedVersion && homebridgePkg.updateAvailable"></i>
         </div>
         <div class="align-self-center">
+          <span>Version</span>
           <br>
           <span class="grey-text" *ngIf="homebridgePkg.installedVersion">
-            <span [translate]="'status.homebridge.label_version'">Version</span>
             {{ homebridgePkg.installedVersion }}
           </span>
         </div>
