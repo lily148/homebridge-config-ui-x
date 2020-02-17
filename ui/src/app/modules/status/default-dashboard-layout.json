@@ -8,8 +8,8 @@
     "mobileOrder": 10
   },
   {
-    "x": 15,
-    "y": 0,
+    "x": 5,
+    "y": 3,
     "component": "UptimeWidgetComponent",
     "cols": 15,
     "rows": 3,
