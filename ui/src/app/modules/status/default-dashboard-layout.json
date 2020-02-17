@@ -9,9 +9,9 @@
   },
   {
     "x": 15,
-    "y": 3,
+    "y": 0,
     "component": "UptimeWidgetComponent",
-    "cols": 5,
+    "cols": 15,
     "rows": 3,
     "mobileOrder": 60
   },
