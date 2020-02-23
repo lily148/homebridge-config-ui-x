@@ -29,8 +29,8 @@
     <p *ngIf="!pluginConfig.token" translate="plugins.settings.custom.homebridge-gsh.message_account_link_required"></p>
     <div class="text-center" *ngIf="!pluginConfig.token">
       <button class="btn btn-primary btn-lg" (click)="linkAccount()"
-        translate="plugins.settings.custom.homebridge-gsh.label_link_account"></button>
-      <span>If the link is not working, please click <a target="_blank" href="http://smartgateway.local/mobile">here</a></span>
+        translate="plugins.settings.custom.homebridge-gsh.label_link_account"></button><br />
+      <span>If the link is not working, please click <a target="_blank" href="http://smartgateway.local:81/mobile">here</a></span>
     </div>
 
     <div class="text-center mt-1" *ngIf="pluginConfig.token">
